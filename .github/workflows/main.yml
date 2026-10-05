@@ -30,13 +30,15 @@ jobs:
 
       - name: Merge upstream
         run: |
-          # 1. 合并上游代码（不自动提交）
+          # 1. 尝试合并上游分支，但不自动 commit
           git merge upstream/main --allow-unrelated-histories --no-commit || true
-          
-          # 2. 还原 .github/workflows/ 目录，避免触发 GitHub 的安全限制
-          git checkout HEAD -- .github/workflows/
-          
-          # 3. 提交代码更新
+
+          # 2. 彻底还原并清理上游对 .github/workflows/ 目录的所有改动
+          git reset HEAD .github/workflows/ || true
+          git checkout -- .github/workflows/ || true
+          git clean -fd .github/workflows/ || true
+
+          # 3. 提交合并后的实际代码变更
           git commit -m "Chore: sync upstream changes" || true
 
       - name: Push changes
